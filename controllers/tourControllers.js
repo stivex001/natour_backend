@@ -20,7 +20,20 @@ exports.createTour = async (req, res) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "sort", "limit", "fields"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    let queryStr = JSON.stringify(queryObj);
+
+    // ✅ Replace plain operators (gte, lte, gt, lt) with $gte, $lte, etc.
+    //    But also leave $gte untouched if it’s already there
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    const filter = JSON.parse(queryStr);
+    console.log("Filter built:", filter);
+
+    const tours = await Tour.find(filter);
 
     res.status(200).json({
       status: "success",
@@ -30,12 +43,13 @@ exports.getAllTours = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(200).json({
+    res.status(400).json({
       status: "fail",
       message: error,
     });
   }
 };
+
 
 exports.getTour = async (req, res) => {
   try {
