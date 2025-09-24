@@ -48,6 +48,9 @@ exports.getAllTours = async (req, res) => {
       query = query.select("-__v");
     }
 
+    // Pagination
+    
+
     const tours = await query;
 
     res.status(200).json({
