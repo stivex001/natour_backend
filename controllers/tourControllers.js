@@ -24,16 +24,24 @@ exports.getAllTours = async (req, res) => {
     const excludedFields = ["page", "sort", "limit", "fields"];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    let queryStr = JSON.stringify(queryObj);
+    console.log("Raw req.query:", req.query);
 
-    // ✅ Replace plain operators (gte, lte, gt, lt) with $gte, $lte, etc.
-    //    But also leave $gte untouched if it’s already there
+    let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
     const filter = JSON.parse(queryStr);
     console.log("Filter built:", filter);
 
-    const tours = await Tour.find(filter);
+    let query = Tour.find(filter);
+
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    const tours = await query;
 
     res.status(200).json({
       status: "success",
@@ -43,13 +51,13 @@ exports.getAllTours = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Error fetching tours:", error);
     res.status(400).json({
       status: "fail",
       message: error,
     });
   }
 };
-
 
 exports.getTour = async (req, res) => {
   try {
