@@ -1,6 +1,8 @@
 const express = require("express");
 const routes = require("./routes/router");
 
+const globalErrorHandler = require("./controllers/errorController");
+
 const app = express();
 
 app.use(express.json());
@@ -15,5 +17,7 @@ app.use("/api/v1", routes);
 //   });
 //   next()
 // });
+
+app.use(globalErrorHandler);
 
 module.exports = app;
