@@ -54,3 +54,18 @@ exports.login = catchAsync(async (req, res, next) => {
     user,
   });
 });
+
+exports.protectedRoute = catchAsync(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  let token;
+
+  if (authHeader && authHeader.startsWith("Bearer")) {
+    token = authHeader.split(" ")[1];
+  }
+
+  if (!token) {
+    return next(new AppError("You are not authorized ", 401));
+  }
+
+  next();
+});
