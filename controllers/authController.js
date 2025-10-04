@@ -1,3 +1,4 @@
+const { promisify } = require("util");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/userModel");
@@ -65,6 +66,9 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
   if (!token) {
     return next(new AppError("You are not authorized ", 401));
   }
+
+  const decoded = await promisify(jwt.verify(token, process.env.JWT_SECRET));
+  console.log(decoded)
 
   next();
 });
