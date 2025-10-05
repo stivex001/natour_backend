@@ -67,7 +67,17 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
     return next(new AppError("You are not authorized ", 401));
   }
 
+  // Verify token
   const decoded = await promisify(jwt.verify(token, process.env.JWT_SECRET));
+
+  // Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+
+  if (!currentUser) {
+    return next(new AppError("The user belonging to this token no longer exists.", 401));
+  }
+
+  // Check if user changed password after the token was issued
 
   next();
 });
