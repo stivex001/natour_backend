@@ -74,10 +74,17 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
   const currentUser = await User.findById(decoded.id);
 
   if (!currentUser) {
-    return next(new AppError("The user belonging to this token no longer exists.", 401));
+    return next(
+      new AppError("The user belonging to this token no longer exists.", 401)
+    );
   }
 
   // Check if user changed password after the token was issued
-
+  if (currentUser.changePasswordAfter(decoded.iat)) {
+    return next(
+      new AppError("User recently changed password! Please log in again.", 401)
+    );
+  }
+  req.user = currentUser;
   next();
 });
