@@ -12,13 +12,14 @@ const signToken = (id) => {
 };
 
 exports.register = catchAsync(async (req, res, next) => {
-  const { name, email, password, confirmPassword } = req.body;
+  const { name, email, password, confirmPassword, role } = req.body;
 
   const newUser = await User.create({
     name,
     email,
     password,
     confirmPassword,
+    role,
   });
 
   const token = signToken(newUser._id);
@@ -88,3 +89,14 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action", 403)
+      );
+    }
+    next();
+  };
+};
