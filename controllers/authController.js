@@ -81,11 +81,11 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
   }
 
   // Check if user changed password after the token was issued
-  if (currentUser.changePasswordAfter(decoded.iat)) {
-    return next(
-      new AppError("User recently changed password! Please log in again.", 401)
-    );
-  }
+  // if (currentUser.changePasswordAfter(decoded.iat)) {
+  //   return next(
+  //     new AppError("User recently changed password! Please log in again.", 401)
+  //   );
+  // }
   req.user = currentUser;
   next();
 });
