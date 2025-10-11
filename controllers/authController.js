@@ -80,6 +80,7 @@ exports.protectedRoute = catchAsync(async (req, res, next) => {
     );
   }
 
+
   // Check if user changed password after the token was issued
   // if (currentUser.changePasswordAfter(decoded.iat)) {
   //   return next(
@@ -100,3 +101,14 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return next(new AppError("There is no user with that email address", 404));
+  }
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+});
