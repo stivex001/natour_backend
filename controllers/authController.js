@@ -13,6 +13,17 @@ const signToken = (id) => {
   });
 };
 
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+  res.status(statusCode).json({
+    status: "success",
+    access_token: token,
+    data: {
+      user,
+    },
+  });
+};
+
 exports.register = catchAsync(async (req, res, next) => {
   const { name, email, password, confirmPassword, role } = req.body;
 
@@ -24,14 +35,7 @@ exports.register = catchAsync(async (req, res, next) => {
     role,
   });
 
-  const token = signToken(newUser._id);
-  res.status(201).json({
-    status: "success",
-    access_token: token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -48,12 +52,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
-  const token = signToken(user._id);
-  return res.status(200).json({
-    status: "success",
-    access_token: token,
-    user,
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.protectedRoute = catchAsync(async (req, res, next) => {
@@ -164,10 +163,24 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
 
-  const updatedToken = signToken(user._id);
-  return res.status(200).json({
-    status: "success",
-    access_token: updatedToken,
-    user,
-  });
+  createSendToken(user, 200, res);
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // Get User from collection
+  const user = await User.findById(req.user.id).select("+password");
+
+  // Check if the inputed current password is correct
+  if (await !user.correctPassword(req.body.currentPassword, user.password)) {
+    return next(new AppError("your current password is not correct", 401));
+  }
+
+  // update password
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+
+  await user.save();
+
+  // log in user send jwt
+  createSendToken(user, 200, res);
 });
