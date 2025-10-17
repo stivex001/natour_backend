@@ -10,7 +10,7 @@ const filterObj = (obj, ...allowedField) => {
   return newObj;
 };
 
-exports.updateProfile = catchAsync(async (req, res, next) => {
+exports.updateProfile = catchAsync(async (req, res) => {
   const filteredBody = filterObj(req.body, "name", "email");
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
@@ -21,6 +21,17 @@ exports.updateProfile = catchAsync(async (req, res, next) => {
     status: 200,
     data: {
       user: updatedUser,
+    },
+  });
+});
+
+exports.deleteMyAccount = catchAsync(async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
+
+  res.status(204).json({
+    status: "success",
+    data: {
+      user: null,
     },
   });
 });
