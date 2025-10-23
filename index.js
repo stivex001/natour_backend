@@ -4,15 +4,22 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
+const hpp = require("hpp");
 
 const routes = require("./routes/router");
 const globalErrorHandler = require("./controllers/errorController");
 
 const app = express();
 
+// Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
+
+// Data sanitization against XSS
 app.use(xss());
-// Global Middlewares
+
+// Prevent parameter pollution
+app.use(hpp());
+
 app.use(helmet());
 // Development logging
 if (process.env.NODE_ENV === "development") {
