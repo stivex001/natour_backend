@@ -44,14 +44,37 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    startLocation: {
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number], // [latitude, longitude]
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
     priceDiscount: {
       type: Number,
       validate: {
-        validator: function(val){
+        validator: function (val) {
           return val < this.price;
         },
         message: "Discount price ({VALUE}) should be below regular price",
-      }
+      },
     },
     summary: {
       type: String,
