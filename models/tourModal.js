@@ -95,7 +95,12 @@ const tourSchema = new mongoose.Schema(
       default: Date.now(),
     },
     startDates: [Date],
+    guides: [{
+      types: mongoose.Schema.ObjectId,
+      ref: "User"
+    }],
   },
+
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
@@ -105,6 +110,22 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
+
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "guides",
+    select:"-__v, -passwordChangeAt"
+  })
+
+  next()
+})
+
+
 
 const Tour = mongoose.model("Tour", tourSchema);
 
